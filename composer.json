@@ -1,0 +1,33 @@
+{
+    "name": "ekok/php-config",
+    "description": "PHP Config",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eko Kurniawan",
+            "email": "setiawanegho@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Ekok\\Config\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": ["tests/_data/classes"]
+    },
+    "require": {
+        "php": ">=8.0",
+        "ekok/php-utils": "^0.2",
+        "ekok/php-cache": "^0.1.0"
+    },
+    "require-dev": {
+        "codeception/codeception": "~4.1",
+        "codeception/module-phpbrowser": "^1.0.0",
+        "codeception/module-asserts": "^1.0.0",
+        "ekok/php-router": "^0.1",
+        "ekok/php-event-dispatcher": "^0.1",
+        "ekok/php-container": "^0.2"
+    }
+}
