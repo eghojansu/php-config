@@ -103,5 +103,17 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $this->assertInstanceOf('FooService', $foo);
         $this->assertSame($foo, $foo2);
         $this->assertSame($foo->time, $foo2->time);
+
+        $std = $this->container->make('stdClass');
+        $std2 = $this->container->make('stdClass');
+
+        $this->assertInstanceOf('stdClass', $std);
+        $this->assertSame($std, $std2);
+
+        $date = $this->container->make('DateTime');
+        $date2 = $this->container->make('DateTime');
+
+        $this->assertInstanceOf('DateTime', $date);
+        $this->assertSame($date, $date2);
     }
 }

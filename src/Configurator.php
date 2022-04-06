@@ -15,6 +15,7 @@ use Ekok\EventDispatcher\Dispatcher;
 use Ekok\Config\Attribute\Route as AttributeRoute;
 use Ekok\EventDispatcher\EventSubscriberInterface;
 use Ekok\Config\Attribute\Service as AttributeService;
+use Ekok\Config\Attribute\Factory as AttributeFactory;
 use Ekok\Config\Attribute\Subscribe as AttributeSubscribe;
 
 class Configurator
@@ -62,7 +63,7 @@ class Configurator
                 return array($attr?->listens ?? array());
             },
             function (\ReflectionMethod $ref, $listens) use ($class) {
-                $handler = Call::standarize($class, $ref->name);
+                $handler = Call::standarize($class, $ref->name, $ref->isStatic());
 
                 if (!$attrs = $ref->getAttributes(AttributeSubscribe::class)) {
                     if (Str::equals($ref->name, ...$listens)) {
@@ -126,7 +127,7 @@ class Configurator
                 $route = $attrs[0]->newInstance();
 
                 $definition = $this->routeBuildAttr($route, $group);
-                $handler = Call::standarize($class, $ref->name);
+                $handler = Call::standarize($class, $ref->name, $ref->isStatic());
 
                 $this->router->route($definition, $handler);
             },
@@ -156,6 +157,38 @@ class Configurator
                             'alias' => $attr->alias,
                             'substitutions' => $attr->substitutions,
                             'calls' => $attr->calls,
+                            'inherit' => $attr->inherit,
+                            'tags' => $attr->tags,
+                        ));
+                    },
+                );
+                Arr::walk(
+                    $ref->getAttributes(AttributeFactory::class),
+                    function (\ReflectionAttribute $attribute) use ($ref) {
+                        /** @var AttributeFactory */
+                        $attr = $attribute->newInstance();
+
+                        $this->di->addRule($attr->name ?? $attr->class, array(
+                            'create' => Call::standarize($ref->name, '__invoke'),
+                            'shared' => $attr->shared,
+                            'alias' => $attr->alias,
+                            'inherit' => $attr->inherit,
+                            'tags' => $attr->tags,
+                        ));
+                    },
+                );
+            },
+            function (\ReflectionMethod $ref) use ($class) {
+                Arr::walk(
+                    $ref->getAttributes(AttributeFactory::class),
+                    function (\ReflectionAttribute $attribute) use ($ref, $class) {
+                        /** @var AttributeFactory */
+                        $attr = $attribute->newInstance();
+
+                        $this->di->addRule($attr->name ?? $attr->class, array(
+                            'create' => Call::standarize($class, $ref->name, $ref->isStatic()),
+                            'shared' => $attr->shared,
+                            'alias' => $attr->alias,
                             'inherit' => $attr->inherit,
                             'tags' => $attr->tags,
                         ));
