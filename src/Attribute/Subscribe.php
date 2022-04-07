@@ -10,7 +10,8 @@ class Subscribe
     /** @var array|null */
     public $listens = null;
 
-    public function __construct(string ...$eventNames) {
-        $this->listens = $eventNames ?: null;
+    public function __construct(string|array $events = null, string ...$eventNames)
+    {
+        $this->listens = array_merge((array) $events, $eventNames) ?: null;
     }
 }

@@ -51,6 +51,9 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $this->dispatcher->dispatch($event = Event::named('me'));
         $this->assertTrue($event->isPropagationStopped());
 
+        $this->dispatcher->dispatch($event = Event::named('custom'));
+        $this->assertTrue($event->isPropagationStopped());
+
         $this->dispatcher->dispatch($event = Event::named('onQux'));
         $this->assertFalse($event->isPropagationStopped());
     }

@@ -59,14 +59,18 @@ class Configurator
 
                 /** @var AttributeSubscribe|null */
                 $attr = $attrs ? $attrs[0]->newInstance() : null;
+                $listens = $attr?->listens ?? array();
+                $events = array_values($listens);
 
-                return array($attr?->listens ?? array());
+                return array($listens, $events);
             },
-            function (\ReflectionMethod $ref, $listens) use ($class) {
+            function (\ReflectionMethod $ref, $listens, $events) use ($class) {
                 $handler = Call::standarize($class, $ref->name, $ref->isStatic());
 
                 if (!$attrs = $ref->getAttributes(AttributeSubscribe::class)) {
-                    if (Str::equals($ref->name, ...$listens)) {
+                    if (isset($listens[$ref->name])) {
+                        $this->dispatcher->on($listens[$ref->name], $handler);
+                    } elseif (Str::equals($ref->name, ...$events)) {
                         $this->dispatcher->on($ref->name, $handler);
                     }
 
