@@ -36,21 +36,15 @@ class SubscriberLoader extends AbstractLoader
         array_walk(
             $methods,
             function (\ReflectionMethod $method) use ($class, $listens, $events) {
-                $handler = Call::standarize($class->name, $method->name, $method->isStatic());
-
-                if (!$attrs = $method->getAttributes(Subscribe::class)) {
-                    if (isset($listens[$method->name])) {
-                        $this->dispatcher->on($listens[$method->name], $handler);
-                    } elseif (Str::equals($method->name, ...$events)) {
-                        $this->dispatcher->on($method->name, $handler);
-                    }
-
-                    return;
-                }
-
                 /** @var Subscribe */
-                $subscriber = $attrs[0]->newInstance();
-                $registers = $subscriber->listens ?? array($method->name);
+                $subscriber = self::getAttributeInstance(Subscribe::class, $method);
+                $handler = Call::standarize($class->name, $method->name, $method->isStatic());
+                $registers = match(true) {
+                    !!$subscriber => $subscriber->listens ?? array($method->name),
+                    isset($listens[$method->name]) => array($listens[$method->name]),
+                    Str::equals($method->name, ...$events) => array($method->name),
+                    default => array(),
+                };
 
                 array_walk(
                     $registers,

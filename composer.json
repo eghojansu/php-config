@@ -28,6 +28,7 @@
         "codeception/module-asserts": "^1.0.0",
         "ekok/php-router": "^0.1",
         "ekok/php-event-dispatcher": "^0.1",
-        "ekok/php-container": "^0.2"
+        "ekok/php-container": "^0.2",
+        "ekok/php-validation": "^0.1"
     }
 }

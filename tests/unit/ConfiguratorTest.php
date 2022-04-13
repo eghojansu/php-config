@@ -4,8 +4,9 @@ use Ekok\Cache\Cache;
 use Ekok\Container\Di;
 use Ekok\Router\Router;
 use Ekok\Config\Configurator;
-use Ekok\Config\Loader\RouteLoader;
+use Ekok\Validation\Validator;
 use Ekok\EventDispatcher\Event;
+use Ekok\Config\Loader\RouteLoader;
 use Ekok\EventDispatcher\Dispatcher;
 
 class ConfiguratorTest extends \Codeception\Test\Unit
@@ -22,6 +23,9 @@ class ConfiguratorTest extends \Codeception\Test\Unit
     /** @var Router */
     private $router;
 
+    /** @var Validator */
+    private $validator;
+
     protected function _before()
     {
         $this->container = new Di();
@@ -30,6 +34,7 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $this->config = $this->container->make(Configurator::class);
         $this->dispatcher = $this->container->make(Dispatcher::class);
         $this->router = $this->container->make(Router::class);
+        $this->validator = $this->container->make(Validator::class);
     }
 
     public function testLoadSubscribers()
@@ -46,6 +51,9 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $this->assertTrue($event->isPropagationStopped());
 
         $this->dispatcher->dispatch($event = Event::named('me'));
+        $this->assertTrue($event->isPropagationStopped());
+
+        $this->dispatcher->dispatch($event = Event::named('you'));
         $this->assertTrue($event->isPropagationStopped());
 
         $this->dispatcher->dispatch($event = Event::named('custom'));
@@ -121,5 +129,22 @@ class ConfiguratorTest extends \Codeception\Test\Unit
 
         $this->assertInstanceOf('DateTime', $date);
         $this->assertSame($date, $date2);
+    }
+
+    public function testLoadRules()
+    {
+        $this->config->loadRules(TEST_DATA . '/classes/Rule');
+
+        $result = $this->validator->validate(array(
+            'foo' => 'foo',
+            'bar' => 'is_true_bar',
+            'baz' => 'baz',
+        ), array(
+            'foo' => 'foo',
+            'bar' => 'true_bar',
+            'baz' => 'baz',
+        ));
+
+        $this->assertTrue($result->success());
     }
 }

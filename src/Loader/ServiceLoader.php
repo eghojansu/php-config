@@ -45,7 +45,7 @@ class ServiceLoader extends AbstractLoader
         array_walk(
             $attributes,
             function (\ReflectionAttribute $attribute) use ($class) {
-                /** @var AttributeService */
+                /** @var Service */
                 $attr = $attribute->newInstance();
 
                 $this->di->addRule($attr->name ?? $attr->class, array(

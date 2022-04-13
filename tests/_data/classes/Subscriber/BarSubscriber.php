@@ -16,7 +16,7 @@ class BarSubscriber
         $event->stopPropagation();
     }
 
-    #[Subscribe('me')]
+    #[Subscribe('me', 'you')]
     public function handleMe(Event $event)
     {
         $event->stopPropagation();
