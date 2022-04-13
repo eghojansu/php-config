@@ -4,6 +4,7 @@ use Ekok\Cache\Cache;
 use Ekok\Container\Di;
 use Ekok\Router\Router;
 use Ekok\Config\Configurator;
+use Ekok\Config\Loader\RouteLoader;
 use Ekok\EventDispatcher\Event;
 use Ekok\EventDispatcher\Dispatcher;
 
@@ -23,12 +24,8 @@ class ConfiguratorTest extends \Codeception\Test\Unit
 
     protected function _before()
     {
-        $this->container = new Di(array(
-            Dispatcher::class => array('shared' => true),
-            Configurator::class => array('shared' => true),
-            Router::class => array('shared' => true),
-            Cache::class => array('shared' => true),
-        ));
+        $this->container = new Di();
+        $this->container->defaults(array('shared' => true));
 
         $this->config = $this->container->make(Configurator::class);
         $this->dispatcher = $this->container->make(Dispatcher::class);
@@ -65,13 +62,19 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $routes = $this->router->getRoutes();
         $aliases = $this->router->getAliases();
 
-        $this->assertCount(3, $routes);
-        $this->assertCount(1, $aliases);
-        $this->assertSame('\AController@home', $routes['/a/home']['GET']['handler']);
-        $this->assertSame('\BController@home', $routes['/b']['GET']['handler']);
+        $this->assertCount(11, $routes);
+        $this->assertCount(10, $aliases);
+        $this->assertSame('AController@home', $routes['/a/home']['GET']['handler']);
+        $this->assertSame('BController@home', $routes['/b']['GET']['handler']);
+        $this->assertSame('CController@home', $routes['/c']['GET']['handler']);
+        $this->assertSame('CController@foo', $routes['/c/foo']['GET']['handler']);
+        $this->assertSame('DController@index', $routes['/resource']['GET']['handler']);
+        $this->assertSame('DController@show', $routes['/resource/@resource']['GET']['handler']);
+        $this->assertSame('EController@index', $routes['/rest']['GET']['handler']);
+        $this->assertSame('EController@show', $routes['/rest/@rest']['GET']['handler']);
 
         $expected = array(
-            'handler' => '\BController@complexAttributes',
+            'handler' => 'BController@complexAttributes',
             'alias' => null,
             'tags' => array(
                 'this', 'is', 'a', 'bunch', 'of', 'tags',
@@ -82,9 +85,9 @@ class ConfiguratorTest extends \Codeception\Test\Unit
         $this->assertEquals($expected, $routes['/b/complex']['GET']);
     }
 
-    public function testLoadRoute()
+    public function testLoadRouteObject()
     {
-        $this->config->loadRoute(new AController());
+        $this->container->make(RouteLoader::class)->loadClass(new AController());
 
         $routes = $this->router->getRoutes();
         $aliases = $this->router->getAliases();
